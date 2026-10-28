@@ -12,7 +12,12 @@ struct ContentView: View {
             HStack(alignment: .top, spacing: 16) {
                 mainColumn
 
-                if model.showSidebar {
+                if model.showAIPanel {
+                    AIPanelView(model: model)
+                        .frame(width: 360)
+                        .frame(maxHeight: .infinity)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                } else if model.showSidebar {
                     SidebarView(model: model, focus: $expressionFocused)
                         .frame(width: 292)
                         .frame(maxHeight: .infinity)
@@ -23,23 +28,24 @@ struct ContentView: View {
             .padding(.bottom, 18)
             .padding(.top, 10)
         }
-        .frame(minWidth: 1060, minHeight: 760)
+        .frame(minWidth: 1120, minHeight: 760)
         .background(WindowConfigurator())
         .sheet(isPresented: $model.showsReference) {
             ReferenceView()
         }
         .onAppear {
-            expressionFocused = model.mode == .basic || model.mode == .scientific
+            expressionFocused = model.mode.editsExpression
         }
         .onChange(of: model.mode) { _, newMode in
-            expressionFocused = newMode == .basic || newMode == .scientific
+            expressionFocused = newMode.editsExpression
         }
         .onChange(of: model.showsReference) { _, isShowing in
-            if !isShowing, model.mode == .basic || model.mode == .scientific {
+            if !isShowing, model.mode.editsExpression {
                 expressionFocused = true
             }
         }
         .animation(.snappy(duration: 0.28), value: model.showSidebar)
+        .animation(.snappy(duration: 0.28), value: model.showAIPanel)
         .animation(.snappy(duration: 0.26), value: model.mode)
     }
 
@@ -52,6 +58,9 @@ struct ContentView: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.99)))
             } else if model.mode == .algebra {
                 AlgebraView(model: model)
+                    .transition(.opacity.combined(with: .scale(scale: 0.99)))
+            } else if model.mode == .settings {
+                SettingsView(model: model)
                     .transition(.opacity.combined(with: .scale(scale: 0.99)))
             } else {
                 DisplayView(model: model, focus: $expressionFocused)
@@ -73,7 +82,7 @@ struct WindowConfigurator: NSViewRepresentable {
             window.titleVisibility = .hidden
             window.isMovableByWindowBackground = true
             window.styleMask.insert(.fullSizeContentView)
-            window.minSize = NSSize(width: 1060, height: 760)
+            window.minSize = NSSize(width: 1120, height: 760)
         }
         return view
     }

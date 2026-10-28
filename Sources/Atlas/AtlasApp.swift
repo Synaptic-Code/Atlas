@@ -23,6 +23,8 @@ struct AtlasApp: App {
                         model.algebra.solve(with: model.engine)
                     case .basic, .scientific:
                         model.evaluate()
+                    case .settings:
+                        break
                     }
                 }
                 .keyboardShortcut(.return, modifiers: [.command])
@@ -54,12 +56,21 @@ struct AtlasApp: App {
                     .keyboardShortcut("3", modifiers: [.command])
                 Button("Algebra") { model.mode = .algebra }
                     .keyboardShortcut("4", modifiers: [.command])
+                Button("Settings") { model.mode = .settings }
+                    .keyboardShortcut("5", modifiers: [.command])
 
                 Divider()
 
+                Button("AI Tutor") {
+                    withAnimation(.snappy(duration: 0.28)) {
+                        model.toggleAIPanel()
+                    }
+                }
+                .keyboardShortcut("k", modifiers: [.command])
+
                 Button("History Sidebar") {
                     withAnimation(.snappy(duration: 0.28)) {
-                        model.showSidebar.toggle()
+                        model.toggleSidebar()
                     }
                 }
                 .keyboardShortcut("h", modifiers: [.command, .shift])

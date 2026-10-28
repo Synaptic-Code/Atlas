@@ -44,6 +44,11 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <string>27.0</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.utilities</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSPrincipalClass</key>

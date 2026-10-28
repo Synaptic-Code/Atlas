@@ -27,10 +27,18 @@ struct HeaderView: View {
     var focus: FocusState<Bool>.Binding
 
     var body: some View {
-        HStack(spacing: 10) {
-            brand
+        ViewThatFits(in: .horizontal) {
+            content(compact: false)
+            content(compact: true)
+        }
+        .frame(height: 38)
+    }
 
-            Spacer(minLength: 12)
+    private func content(compact: Bool) -> some View {
+        HStack(spacing: compact ? 6 : 10) {
+            brand(compact: compact)
+
+            Spacer(minLength: 8)
 
             Picker("Mode", selection: $model.mode) {
                 ForEach(CalculatorModel.Mode.allCases) { mode in
@@ -39,11 +47,12 @@ struct HeaderView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(width: 310)
+            .controlSize(compact ? .small : .regular)
+            .frame(width: compact ? 300 : 372)
 
             Button {
                 model.toggleAngleMode()
-                focus.wrappedValue = model.mode == .basic || model.mode == .scientific
+                focus.wrappedValue = model.mode.editsExpression
             } label: {
                 Text(model.angleMode.label)
                     .font(.system(size: 10.5, weight: .bold, design: .rounded))
@@ -61,23 +70,33 @@ struct HeaderView: View {
             }
 
             GlassIconButton(
+                symbol: "sparkles",
+                help: "AI tutor (⌘K)",
+                active: model.showAIPanel
+            ) {
+                withAnimation(.snappy(duration: 0.28)) {
+                    model.toggleAIPanel()
+                }
+                focus.wrappedValue = model.mode.editsExpression
+            }
+
+            GlassIconButton(
                 symbol: "sidebar.right",
-                help: "Toggle history",
+                help: "Toggle history (⇧⌘H)",
                 active: model.showSidebar
             ) {
                 withAnimation(.snappy(duration: 0.28)) {
-                    model.showSidebar.toggle()
+                    model.toggleSidebar()
                 }
-                focus.wrappedValue = model.mode == .basic || model.mode == .scientific
+                focus.wrappedValue = model.mode.editsExpression
             }
         }
         .padding(.leading, 74)
         .padding(.trailing, 2)
-        .frame(height: 38)
     }
 
-    private var brand: some View {
-        HStack(spacing: 10) {
+    private func brand(compact: Bool) -> some View {
+        HStack(spacing: compact ? 8 : 10) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(
@@ -98,10 +117,14 @@ struct HeaderView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Atlas")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                Text("Mathematics · Golden Gate")
-                    .font(.system(size: 9.5, weight: .medium))
-                    .foregroundStyle(.secondary)
+
+                if !compact {
+                    Text("Mathematics · Golden Gate")
+                        .font(.system(size: 9.5, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
             }
+            .fixedSize()
         }
     }
 }

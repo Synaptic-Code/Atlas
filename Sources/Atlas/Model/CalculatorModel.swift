@@ -46,6 +46,7 @@ final class CalculatorModel {
         case scientific
         case calculus
         case algebra
+        case settings
 
         var id: String { rawValue }
 
@@ -55,6 +56,7 @@ final class CalculatorModel {
             case .scientific: return "Scientific"
             case .calculus: return "Calculus"
             case .algebra: return "Algebra"
+            case .settings: return "Settings"
             }
         }
 
@@ -64,7 +66,13 @@ final class CalculatorModel {
             case .scientific: return "function"
             case .calculus: return "chart.xyaxis.line"
             case .algebra: return "x.squareroot"
+            case .settings: return "gearshape"
             }
+        }
+
+        /// Modes that edit the main expression field.
+        var editsExpression: Bool {
+            self == .basic || self == .scientific
         }
     }
 
@@ -88,9 +96,14 @@ final class CalculatorModel {
         didSet { save() }
     }
 
+    var showAIPanel = false {
+        didSet { save() }
+    }
+
     var showsReference = false
     var calculus = CalculusModel()
     var algebra = AlgebraModel()
+    var aiChat = AIChatModel()
 
     private static let storageKey = "atlas.state.v1"
     private static let maximumHistory = 80
@@ -129,6 +142,39 @@ final class CalculatorModel {
     var exactFraction: String? {
         guard case .value(let value, _) = evaluation else { return nil }
         return NumberText.fraction(for: value)
+    }
+
+    /// A compact description of the calculator that the AI tutor can use as context.
+    var aiContext: String {
+        var lines: [String] = [
+            "Angle mode: \(angleMode == .degrees ? "degrees" : "radians")."
+        ]
+
+        let trimmed = expression.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            lines.append("Expression in the input field: \(trimmed)")
+            switch evaluation {
+            case .value(let value, _):
+                lines.append("Current result: \(NumberText.expressionString(value))")
+            case .failure(let message):
+                lines.append("The expression can’t currently be evaluated: \(message)")
+            case .empty:
+                break
+            }
+        }
+
+        if !userVariables.isEmpty {
+            let list = userVariables.prefix(8)
+                .map { "\($0.name) = \(NumberText.expressionString($0.value))" }
+                .joined(separator: ", ")
+            lines.append("Variables: \(list)")
+        }
+
+        if let last = history.first {
+            lines.append("Last calculation: \(last.expression) = \(last.display)")
+        }
+
+        return lines.joined(separator: "\n")
     }
 
     /// True while the expression still ends mid-thought, e.g. `2 +` or `sin(`.
@@ -249,6 +295,40 @@ final class CalculatorModel {
         angleMode = angleMode == .degrees ? .radians : .degrees
     }
 
+    func toggleSidebar() {
+        showSidebar.toggle()
+        if showSidebar { showAIPanel = false }
+    }
+
+    func toggleAIPanel() {
+        showAIPanel.toggle()
+        if showAIPanel { showSidebar = false }
+    }
+
+    func openSettings() {
+        mode = .settings
+    }
+
+    func clearVariables() {
+        for variable in engine.userVariables {
+            engine.removeVariable(named: variable.name)
+        }
+    }
+
+    func resetEverything() {
+        history.removeAll()
+        clearVariables()
+        engine.setAnswer(0)
+        expression = ""
+        selection = nil
+        justEvaluated = false
+        angleMode = .degrees
+        mode = .basic
+        showSidebar = true
+        showAIPanel = false
+        aiChat.reset()
+    }
+
     func use(entry: HistoryEntry) {
         justEvaluated = false
         expression = entry.expression
@@ -322,6 +402,7 @@ final class CalculatorModel {
         var angleMode: AngleMode = .degrees
         var mode: Mode?
         var showSidebar: Bool = true
+        var showAIPanel: Bool?
     }
 
     private static var encoder: JSONEncoder {
@@ -347,7 +428,8 @@ final class CalculatorModel {
             variables: engine.variables.filter { $0.key != "ans" },
             angleMode: engine.angleMode,
             mode: mode,
-            showSidebar: showSidebar
+            showSidebar: showSidebar,
+            showAIPanel: showAIPanel
         )
         guard let data = try? Self.encoder.encode(state) else { return }
         UserDefaults.standard.set(data, forKey: Self.storageKey)
@@ -363,5 +445,6 @@ final class CalculatorModel {
         engine = CalculatorEngine(variables: state.variables, angleMode: state.angleMode)
         mode = state.mode ?? .basic
         showSidebar = state.showSidebar
+        showAIPanel = state.showAIPanel ?? false
     }
 }

@@ -84,6 +84,19 @@ and fall back to a numeric root finder for the rest. LaTeX commands such as
 `\frac`, `\sqrt`, `\times`, `\pi`, `\pm` and `\left( … \right)` are accepted,
 and a typed `*` is displayed as `×`.
 
+**AI tutor** (its own panel, ⌘K) — ask about a problem and get a step-by-step
+explanation. The panel sends the current expression, result, variables and last
+calculation along with your question, so “why is this wrong?” refers to what’s
+on screen. It speaks the OpenAI chat-completions protocol and Anthropic’s
+Messages API, so it works with OpenAI, Anthropic, OpenRouter, Groq, Ollama and
+LM Studio. The API key is stored in the macOS Keychain and requests go straight
+from your Mac to the provider you choose.
+
+**Settings** (its own tab, ⌘5) — angle mode, sidebar and AI-panel visibility,
+history and variable cleanup, a full reset, and all of the AI configuration
+(provider, model, base URL, key, instructions, creativity and a connection
+test).
+
 ## Quick syntax
 
 ```
@@ -109,7 +122,8 @@ The in-app **Reference** sheet (⌘/) lists every function with an example.
 | ⇧⌘C | Copy the current result |
 | ⇧⌘⌫ | Clear |
 | ⇧⌘D | Toggle degrees / radians |
-| ⌘1 / ⌘2 / ⌘3 / ⌘4 | Basic / Scientific / Calculus / Algebra |
+| ⌘1 / ⌘2 / ⌘3 / ⌘4 / ⌘5 | Basic / Scientific / Calculus / Algebra / Settings |
+| ⌘K | Toggle the AI tutor panel |
 | ⇧⌘H | Toggle the history sidebar |
 | ⌘/ | Function reference |
 
@@ -126,8 +140,8 @@ Sources/AtlasCore/     Dependency-free math engine
   NumberText            display formatting + fraction approximation
   CalculatorEngine      stateful front door (variables, ans)
 Sources/Atlas/         SwiftUI app
-  Model/                observable calculator, calculus and algebra state
-  Views/                display, keypads, calculus workspace, algebra solver, plot, sidebar, reference
+  Model/                observable calculator, calculus, algebra and AI state
+  Views/                display, keypads, calculus workspace, algebra solver, plot, sidebar, reference, AI panel, settings
   Support/Theme.swift   Golden Gate aurora + glass helpers
 Tests/                 engine tests
 Assets.xcassets/       app icon (all macOS sizes) and accent colour
@@ -150,3 +164,8 @@ Atlas.xcodeproj/       Xcode app + framework + test targets
   functions; results are evaluated in the current angle mode.
 - The app is intentionally dependency-free: no third-party packages, and the
   plot is drawn with `Canvas`.
+- The AI tutor is opt-in: nothing is sent until you add a key in Settings and
+  ask a question. The key is held in the login Keychain (`com.atlas.calculator.atlas`)
+  rather than `UserDefaults`. `NSAllowsLocalNetworking` is enabled so local
+  OpenAI-compatible servers (Ollama, LM Studio) can be reached over `http://`
+  without weakening App Transport Security for the internet.
