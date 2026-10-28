@@ -118,6 +118,12 @@ Atlas.xcodeproj/       Xcode app + framework + test targets
 
 ## Notes
 
+- Builds are ad-hoc signed (“Sign to Run Locally”), so hardened runtime is
+  disabled. An ad-hoc signature has no Team ID, and hardened runtime's library
+  validation rejects embedded frameworks whose Team ID differs (including the
+  no-Team-ID case), which prevents `AtlasCore.framework` from loading. If you
+  switch to a real Apple Development team and sign every target with it, you can
+  re-enable `ENABLE_HARDENED_RUNTIME` in the app target.
 - Values are IEEE-754 doubles, rendered to 12 significant digits with a fraction
   approximation where one is close.
 - Numerical calculus is accurate to roughly 10–12 significant digits for smooth
