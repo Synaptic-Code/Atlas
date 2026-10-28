@@ -66,6 +66,24 @@ between launches.
 The plot shades integral regions, draws tangent lines for derivatives, marks
 limits, roots and integer sample points.
 
+**Algebra** (its own tab) — type an equation the way you would write it,
+including LaTeX, and Atlas solves it live:
+
+```latex
+x^{2} - 5x + 6 = 0
+\frac{1}{2}x^{2} + 3x - 2 = 0
+(x + 1)(x - 2) = 0
+y = x^{2} - 4
+```
+
+The result includes exact roots (rational, radical or complex), the factored
+form over the rationals, the discriminant, the vertex and vertex form, and a
+plot with roots and vertex marked. Linear, quadratic, cubic and higher-degree
+polynomials are supported; higher degrees are factored over the rationals first
+and fall back to a numeric root finder for the rest. LaTeX commands such as
+`\frac`, `\sqrt`, `\times`, `\pi`, `\pm` and `\left( … \right)` are accepted,
+and a typed `*` is displayed as `×`.
+
 ## Quick syntax
 
 ```
@@ -91,7 +109,7 @@ The in-app **Reference** sheet (⌘/) lists every function with an example.
 | ⇧⌘C | Copy the current result |
 | ⇧⌘⌫ | Clear |
 | ⇧⌘D | Toggle degrees / radians |
-| ⌘1 / ⌘2 / ⌘3 | Basic / Scientific / Calculus |
+| ⌘1 / ⌘2 / ⌘3 / ⌘4 | Basic / Scientific / Calculus / Algebra |
 | ⇧⌘H | Toggle the history sidebar |
 | ⌘/ | Function reference |
 
@@ -103,11 +121,13 @@ Sources/AtlasCore/     Dependency-free math engine
   Evaluator             AST interpreter, variables, angle modes
   MathFunctions         function library
   Calculus              numerical differentiation/integration/limits/roots/series
+  Algebra               polynomial solving, rational factoring, exact roots
+  LaTeX                 LaTeX input conversion and pretty printing
   NumberText            display formatting + fraction approximation
   CalculatorEngine      stateful front door (variables, ans)
 Sources/Atlas/         SwiftUI app
-  Model/                observable calculator and calculus state
-  Views/                display, keypads, calculus workspace, plot, sidebar, reference
+  Model/                observable calculator, calculus and algebra state
+  Views/                display, keypads, calculus workspace, algebra solver, plot, sidebar, reference
   Support/Theme.swift   Golden Gate aurora + glass helpers
 Tests/                 engine tests
 Assets.xcassets/       app icon (all macOS sizes) and accent colour

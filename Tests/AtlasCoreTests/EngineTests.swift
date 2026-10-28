@@ -274,4 +274,91 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(NumberText.fraction(for: 0.1 + 0.2), "3/10")
         XCTAssertNil(NumberText.fraction(for: .pi))
     }
+
+    // MARK: LaTeX input
+
+    func testLaTeXConversion() {
+        XCTAssertEqual(LaTeX.expression(from: "2 \\times x^{2}"), "2 * x^2")
+        XCTAssertEqual(LaTeX.expression(from: "\\frac{1}{2}x"), "(1)/(2)x")
+        XCTAssertEqual(LaTeX.expression(from: "\\sqrt{5}"), "sqrt(5)")
+        XCTAssertEqual(LaTeX.expression(from: "\\sqrt[3]{8}"), "root(3, 8)")
+        XCTAssertEqual(LaTeX.expression(from: "\\left( x + 1 \\right)^{2}"), "( x + 1 )^2")
+        XCTAssertEqual(LaTeX.pretty("x^{2} - 5x + 6 = 0"), "x² − 5x + 6 = 0")
+        XCTAssertEqual(LaTeX.pretty("2 * x"), "2 × x")
+        XCTAssertEqual(LaTeX.splitEquation("x^{2} = 4").left, "x^2")
+        XCTAssertEqual(LaTeX.splitEquation("x^{2} = 4").right, "4")
+    }
+
+    // MARK: Algebra
+
+    func testQuadraticRootsAndFactoring() throws {
+        let solution = try AlgebraSolver.solve("x^{2} - 5x + 6 = 0")
+        XCTAssertEqual(solution.degree, 2)
+        XCTAssertEqual(solution.roots.map(\.real).sorted(), [2, 3])
+        XCTAssertEqual(solution.discriminant, 1)
+        XCTAssertEqual(solution.factoredForm, "(x − 2)(x − 3)")
+        XCTAssertEqual(solution.standardForm, "x² − 5x + 6 = 0")
+        XCTAssertEqual(solution.vertex?.x ?? .nan, 2.5, accuracy: 1e-12)
+        XCTAssertEqual(solution.vertexForm, "(x − 5/2)² − 1/4")
+    }
+
+    func testNonMonicQuadratic() throws {
+        let solution = try AlgebraSolver.solve("2x^{2} - 3x + 1 = 0")
+        XCTAssertEqual(solution.roots.map(\.real).sorted(), [0.5, 1])
+        XCTAssertNotNil(solution.factoredForm)
+        XCTAssertTrue(solution.factoredForm?.contains("(2x − 1)") == true)
+        XCTAssertTrue(solution.factoredForm?.contains("(x − 1)") == true)
+    }
+
+    func testFactoredInputAndRepeatedRoot() throws {
+        let factored = try AlgebraSolver.solve("(x + 1)(x - 2) = 0")
+        XCTAssertEqual(factored.roots.map(\.real).sorted(), [-1, 2])
+
+        let repeated = try AlgebraSolver.solve("(x - 1)^{2} = 0")
+        XCTAssertEqual(repeated.roots.count, 1)
+        XCTAssertEqual(repeated.roots.first?.multiplicity, 2)
+        XCTAssertEqual(repeated.factoredForm, "(x − 1)²")
+        XCTAssertTrue(repeated.rootSummary.contains("double root"))
+    }
+
+    func testIrrationalAndComplexRoots() throws {
+        let irrational = try AlgebraSolver.solve("x^{2} - 2 = 0")
+        XCTAssertEqual(irrational.roots.map(\.real).sorted()[0], -2.0.squareRoot(), accuracy: 1e-12)
+        XCTAssertNil(irrational.factoredForm)
+        XCTAssertTrue(irrational.rootLines.contains { $0.contains("√2") })
+
+        let complex = try AlgebraSolver.solve("x^{2} + 1 = 0")
+        XCTAssertEqual(complex.roots.count, 2)
+        XCTAssertEqual(complex.roots.map(\.imaginary).sorted(), [-1, 1])
+        XCTAssertEqual(complex.rootSummary, "x = ±i")
+        XCTAssertNil(complex.factoredForm)
+    }
+
+    func testLinearAndCubic() throws {
+        let linear = try AlgebraSolver.solve("3x - 6 = 0")
+        XCTAssertEqual(linear.roots.first?.real, 2)
+        XCTAssertEqual(linear.factoredForm, "3(x − 2)")
+
+        let cubic = try AlgebraSolver.solve("x^{3} - 6x^{2} + 11x - 6 = 0")
+        XCTAssertEqual(cubic.roots.map(\.real).sorted(), [1, 2, 3])
+        XCTAssertEqual(cubic.factoredForm, "(x − 1)(x − 2)(x − 3)")
+    }
+
+    func testFractionalCoefficientsAndEquationHeuristic() throws {
+        let fractional = try AlgebraSolver.solve("\\frac{1}{2}x^{2} + 3x - 2 = 0")
+        XCTAssertEqual(fractional.standardForm, "x² + 6x − 4 = 0")
+        XCTAssertTrue(fractional.rootLines.contains { $0.contains("√13") })
+
+        let heuristic = try AlgebraSolver.solve("y = x^{2} - 4")
+        XCTAssertEqual(heuristic.variable, "x")
+        XCTAssertEqual(heuristic.roots.map(\.real).sorted(), [-2, 2])
+    }
+
+    func testIdentityAndContradiction() throws {
+        let identity = try AlgebraSolver.solve("x - x = 0")
+        XCTAssertTrue(identity.isIdentity)
+
+        let contradiction = try AlgebraSolver.solve("2 = 3")
+        XCTAssertTrue(contradiction.isContradiction)
+    }
 }

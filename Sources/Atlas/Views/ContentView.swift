@@ -29,13 +29,13 @@ struct ContentView: View {
             ReferenceView()
         }
         .onAppear {
-            expressionFocused = model.mode != .calculus
+            expressionFocused = model.mode == .basic || model.mode == .scientific
         }
         .onChange(of: model.mode) { _, newMode in
-            expressionFocused = newMode != .calculus
+            expressionFocused = newMode == .basic || newMode == .scientific
         }
         .onChange(of: model.showsReference) { _, isShowing in
-            if !isShowing, model.mode != .calculus {
+            if !isShowing, model.mode == .basic || model.mode == .scientific {
                 expressionFocused = true
             }
         }
@@ -49,6 +49,9 @@ struct ContentView: View {
 
             if model.mode == .calculus {
                 CalculusView(model: model)
+                    .transition(.opacity.combined(with: .scale(scale: 0.99)))
+            } else if model.mode == .algebra {
+                AlgebraView(model: model)
                     .transition(.opacity.combined(with: .scale(scale: 0.99)))
             } else {
                 DisplayView(model: model, focus: $expressionFocused)

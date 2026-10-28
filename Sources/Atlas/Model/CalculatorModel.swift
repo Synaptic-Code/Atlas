@@ -45,6 +45,7 @@ final class CalculatorModel {
         case basic
         case scientific
         case calculus
+        case algebra
 
         var id: String { rawValue }
 
@@ -53,6 +54,7 @@ final class CalculatorModel {
             case .basic: return "Basic"
             case .scientific: return "Scientific"
             case .calculus: return "Calculus"
+            case .algebra: return "Algebra"
             }
         }
 
@@ -61,6 +63,7 @@ final class CalculatorModel {
             case .basic: return "plus.forwardslash.minus"
             case .scientific: return "function"
             case .calculus: return "chart.xyaxis.line"
+            case .algebra: return "x.squareroot"
             }
         }
     }
@@ -87,6 +90,7 @@ final class CalculatorModel {
 
     var showsReference = false
     var calculus = CalculusModel()
+    var algebra = AlgebraModel()
 
     private static let storageKey = "atlas.state.v1"
     private static let maximumHistory = 80

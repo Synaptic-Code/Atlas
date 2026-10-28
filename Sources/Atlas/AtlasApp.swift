@@ -16,9 +16,12 @@ struct AtlasApp: App {
         .commands {
             CommandMenu("Calculator") {
                 Button("Evaluate") {
-                    if model.mode == .calculus {
+                    switch model.mode {
+                    case .calculus:
                         model.calculus.run(with: model.engine)
-                    } else {
+                    case .algebra:
+                        model.algebra.solve(with: model.engine)
+                    case .basic, .scientific:
                         model.evaluate()
                     }
                 }
@@ -49,6 +52,8 @@ struct AtlasApp: App {
                     .keyboardShortcut("2", modifiers: [.command])
                 Button("Calculus") { model.mode = .calculus }
                     .keyboardShortcut("3", modifiers: [.command])
+                Button("Algebra") { model.mode = .algebra }
+                    .keyboardShortcut("4", modifiers: [.command])
 
                 Divider()
 

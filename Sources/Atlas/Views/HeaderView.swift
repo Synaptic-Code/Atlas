@@ -39,11 +39,11 @@ struct HeaderView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(width: 290)
+            .frame(width: 310)
 
             Button {
                 model.toggleAngleMode()
-                focus.wrappedValue = model.mode != .calculus
+                focus.wrappedValue = model.mode == .basic || model.mode == .scientific
             } label: {
                 Text(model.angleMode.label)
                     .font(.system(size: 10.5, weight: .bold, design: .rounded))
@@ -68,7 +68,7 @@ struct HeaderView: View {
                 withAnimation(.snappy(duration: 0.28)) {
                     model.showSidebar.toggle()
                 }
-                focus.wrappedValue = model.mode != .calculus
+                focus.wrappedValue = model.mode == .basic || model.mode == .scientific
             }
         }
         .padding(.leading, 74)

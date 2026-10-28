@@ -19,6 +19,8 @@
 		1A2B3C4D5E6F78900000200A /* KeypadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000100A /* KeypadView.swift */; };
 		1A2B3C4D5E6F78900000200B /* ReferenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000100B /* ReferenceView.swift */; };
 		1A2B3C4D5E6F78900000200C /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000100C /* SidebarView.swift */; };
+		1A2B3C4D5E6F78900000200D /* AlgebraModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000100D /* AlgebraModel.swift */; };
+		1A2B3C4D5E6F78900000200E /* AlgebraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000100E /* AlgebraView.swift */; };
 		1A2B3C4D5E6F789000002011 /* CalculatorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001011 /* CalculatorEngine.swift */; };
 		1A2B3C4D5E6F789000002012 /* Calculus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001012 /* Calculus.swift */; };
 		1A2B3C4D5E6F789000002013 /* Evaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001013 /* Evaluator.swift */; };
@@ -27,6 +29,8 @@
 		1A2B3C4D5E6F789000002016 /* MathFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001016 /* MathFunctions.swift */; };
 		1A2B3C4D5E6F789000002017 /* NumberText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001017 /* NumberText.swift */; };
 		1A2B3C4D5E6F789000002018 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001018 /* Parser.swift */; };
+		1A2B3C4D5E6F789000002019 /* Algebra.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001019 /* Algebra.swift */; };
+		1A2B3C4D5E6F78900000201A /* LaTeX.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000101A /* LaTeX.swift */; };
 		1A2B3C4D5E6F789000002020 /* EngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001020 /* EngineTests.swift */; };
 		1A2B3C4D5E6F789000002034 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001034 /* Assets.xcassets */; };
 		1A2B3C4D5E6F789000002041 /* AtlasCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001041 /* AtlasCore.framework */; };
@@ -78,6 +82,8 @@
 		1A2B3C4D5E6F78900000100A /* KeypadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeypadView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F78900000100B /* ReferenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferenceView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F78900000100C /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F78900000100D /* AlgebraModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgebraModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F78900000100E /* AlgebraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlgebraView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001011 /* CalculatorEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorEngine.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001012 /* Calculus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Calculus.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001013 /* Evaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Evaluator.swift; sourceTree = "<group>"; };
@@ -86,6 +92,8 @@
 		1A2B3C4D5E6F789000001016 /* MathFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathFunctions.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001017 /* NumberText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberText.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001018 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F789000001019 /* Algebra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Algebra.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F78900000101A /* LaTeX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaTeX.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001020 /* EngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001030 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001031 /* Atlas-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Atlas-Info.plist"; sourceTree = "<group>"; };
@@ -175,6 +183,7 @@
 			children = (
 				1A2B3C4D5E6F789000001002 /* CalculatorModel.swift */,
 				1A2B3C4D5E6F789000001003 /* CalculusModel.swift */,
+				1A2B3C4D5E6F78900000100D /* AlgebraModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -198,6 +207,7 @@
 				1A2B3C4D5E6F78900000100A /* KeypadView.swift */,
 				1A2B3C4D5E6F78900000100B /* ReferenceView.swift */,
 				1A2B3C4D5E6F78900000100C /* SidebarView.swift */,
+				1A2B3C4D5E6F78900000100E /* AlgebraView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -213,6 +223,8 @@
 				1A2B3C4D5E6F789000001016 /* MathFunctions.swift */,
 				1A2B3C4D5E6F789000001017 /* NumberText.swift */,
 				1A2B3C4D5E6F789000001018 /* Parser.swift */,
+				1A2B3C4D5E6F789000001019 /* Algebra.swift */,
+				1A2B3C4D5E6F78900000101A /* LaTeX.swift */,
 			);
 			path = AtlasCore;
 			sourceTree = "<group>";
@@ -400,6 +412,8 @@
 				1A2B3C4D5E6F78900000200A /* KeypadView.swift in Sources */,
 				1A2B3C4D5E6F78900000200B /* ReferenceView.swift in Sources */,
 				1A2B3C4D5E6F78900000200C /* SidebarView.swift in Sources */,
+				1A2B3C4D5E6F78900000200D /* AlgebraModel.swift in Sources */,
+				1A2B3C4D5E6F78900000200E /* AlgebraView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,6 +429,8 @@
 				1A2B3C4D5E6F789000002016 /* MathFunctions.swift in Sources */,
 				1A2B3C4D5E6F789000002017 /* NumberText.swift in Sources */,
 				1A2B3C4D5E6F789000002018 /* Parser.swift in Sources */,
+				1A2B3C4D5E6F789000002019 /* Algebra.swift in Sources */,
+				1A2B3C4D5E6F78900000201A /* LaTeX.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -82,6 +82,14 @@ struct ReferenceView: View {
                 Item(token: "Roots", description: "Every real zero in a search range."),
                 Item(token: "Sum · Product", description: "Σ and Π over integer ranges."),
                 Item(token: "d/dx x² at x = 3", description: "Gives 6 — the tangent line is drawn on the graph.")
+            ]),
+            Section(title: "Algebra and LaTeX", symbol: "x.squareroot", items: [
+                Item(token: "x^2 - 5x + 6 = 0", description: "Type an equation in the Algebra tab; it solves as you type."),
+                Item(token: "\\frac{1}{2}x^{2} + 3x - 2 = 0", description: "LaTeX fractions, superscripts and roots are accepted."),
+                Item(token: "(x + 1)(x - 2) = 0", description: "Factored input is expanded and factored back."),
+                Item(token: "\\sqrt{5} · \\times · \\pi", description: "LaTeX commands; a typed * is displayed as ×."),
+                Item(token: "y = x^2 - 4", description: "A single variable on the left solves the right-hand side for x."),
+                Item(token: "Roots · Factored · Vertex", description: "Each solution also shows Δ, vertex form and a plotted graph.")
             ])
         ]
     }
