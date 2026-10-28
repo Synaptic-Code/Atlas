@@ -12,6 +12,7 @@ public enum MathError: Error, Equatable, Sendable {
     case wrongArgumentCount(function: String, expected: String, got: Int)
     case reservedName(String)
     case divisionByZero
+    case sqrtOfNegativeReal(Double)
     case domainError(String)
     case overflow
     case limitDoesNotExist
@@ -42,6 +43,8 @@ extension MathError: LocalizedError {
             return "“\(name)” is reserved and can’t be redefined."
         case .divisionByZero:
             return "Division by zero is undefined."
+        case .sqrtOfNegativeReal(let value):
+            return "Cannot take the square root of a negative real number: \(value)."
         case .domainError(let reason):
             return reason
         case .overflow:
