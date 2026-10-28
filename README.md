@@ -153,14 +153,15 @@ Atlas.xcodeproj/       Xcode app + framework + test targets
 
 ## Notes
 
-- Builds are ad-hoc signed (“Sign to Run Locally”), so hardened runtime is
+- Builds are ad-hoc signed ("Sign to Run Locally"), so hardened runtime is
   disabled. An ad-hoc signature has no Team ID, and hardened runtime's library
   validation rejects embedded frameworks whose Team ID differs (including the
   no-Team-ID case), which prevents `AtlasCore.framework` from loading. If you
   switch to a real Apple Development team and sign every target with it, you can
   re-enable `ENABLE_HARDENED_RUNTIME` in the app target.
 - Values are IEEE-754 doubles, rendered to 12 significant digits with a fraction
-  approximation where one is close.
+  approximation where one is close. Very large or small results may be shown in
+  scientific notation (e.g., `1e6`) — this is intentional and not an error.
 - Numerical calculus is accurate to roughly 10–12 significant digits for smooth
   functions; results are evaluated in the current angle mode.
 - The app is intentionally dependency-free: no third-party packages, and the
@@ -170,3 +171,5 @@ Atlas.xcodeproj/       Xcode app + framework + test targets
   rather than `UserDefaults`. `NSAllowsLocalNetworking` is enabled so local
   OpenAI-compatible servers (Ollama, LM Studio) can be reached over `http://`
   without weakening App Transport Security for the internet.
+- **Future enhancements**: complex number support and matrix operations are on the
+  roadmap but not yet implemented.
