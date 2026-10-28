@@ -4,5 +4,4 @@
 DerivedData/
 xcuserdata/
 *.xcuserstate
-Atlas.xcodeproj/
-Assets.xcassets/
+*.profraw
