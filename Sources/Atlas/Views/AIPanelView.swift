@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AIPanelView: View {
     @Bindable var model: CalculatorModel
+    @Environment(\.openSettings) private var openSettings
     @FocusState private var composerFocused: Bool
 
     private let suggestions = [
@@ -56,8 +57,8 @@ struct AIPanelView: View {
                 withAnimation(.snappy(duration: 0.22)) { chat.clear() }
             }
 
-            GlassIconButton(symbol: "gearshape", help: "AI settings") {
-                model.openSettings()
+            GlassIconButton(symbol: "gearshape", help: "AI settings (⌘,)") {
+                openSettings()
             }
 
             GlassIconButton(symbol: "xmark", help: "Close the AI tutor") {
@@ -243,7 +244,7 @@ struct AIPanelView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Button("Open Settings") {
-                model.openSettings()
+                openSettings()
             }
             .buttonStyle(.glassProminent)
             .tint(Theme.accent)
@@ -277,7 +278,7 @@ struct AIPanelView: View {
                 .controlSize(.small)
 
                 Button("Settings") {
-                    model.openSettings()
+                    openSettings()
                 }
                 .buttonStyle(.glass)
                 .controlSize(.small)

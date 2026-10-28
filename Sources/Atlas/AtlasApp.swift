@@ -23,8 +23,6 @@ struct AtlasApp: App {
                         model.algebra.solve(with: model.engine)
                     case .basic, .scientific:
                         model.evaluate()
-                    case .settings:
-                        break
                     }
                 }
                 .keyboardShortcut(.return, modifiers: [.command])
@@ -56,8 +54,6 @@ struct AtlasApp: App {
                     .keyboardShortcut("3", modifiers: [.command])
                 Button("Algebra") { model.mode = .algebra }
                     .keyboardShortcut("4", modifiers: [.command])
-                Button("Settings") { model.mode = .settings }
-                    .keyboardShortcut("5", modifiers: [.command])
 
                 Divider()
 
@@ -80,6 +76,14 @@ struct AtlasApp: App {
                 }
                 .keyboardShortcut("/", modifiers: [.command])
             }
+        }
+
+        Settings {
+            SettingsView(model: model)
+                .frame(
+                    minWidth: 640, idealWidth: 640, maxWidth: .infinity,
+                    minHeight: 620, idealHeight: 720, maxHeight: .infinity
+                )
         }
     }
 }

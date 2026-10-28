@@ -28,7 +28,7 @@ struct ContentView: View {
             .padding(.bottom, 18)
             .padding(.top, 10)
         }
-        .frame(minWidth: 1120, minHeight: 760)
+        .frame(minWidth: 1060, minHeight: 760)
         .background(WindowConfigurator())
         .sheet(isPresented: $model.showsReference) {
             ReferenceView()
@@ -59,9 +59,6 @@ struct ContentView: View {
             } else if model.mode == .algebra {
                 AlgebraView(model: model)
                     .transition(.opacity.combined(with: .scale(scale: 0.99)))
-            } else if model.mode == .settings {
-                SettingsView(model: model)
-                    .transition(.opacity.combined(with: .scale(scale: 0.99)))
             } else {
                 DisplayView(model: model, focus: $expressionFocused)
                 KeypadView(model: model, focus: $expressionFocused)
@@ -82,7 +79,7 @@ struct WindowConfigurator: NSViewRepresentable {
             window.titleVisibility = .hidden
             window.isMovableByWindowBackground = true
             window.styleMask.insert(.fullSizeContentView)
-            window.minSize = NSSize(width: 1120, height: 760)
+            window.minSize = NSSize(width: 1060, height: 760)
         }
         return view
     }

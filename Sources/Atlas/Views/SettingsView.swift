@@ -16,15 +16,20 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                calculatorCard
-                aiCard(model.aiChat.settings)
-                aboutCard
+        ZStack {
+            AuroraBackdrop()
+
+            ScrollView {
+                VStack(spacing: 14) {
+                    calculatorCard
+                    aiCard(model.aiChat.settings)
+                    aboutCard
+                }
+                .padding(18)
             }
-            .padding(.bottom, 4)
+            .scrollIndicators(.automatic)
         }
-        .scrollIndicators(.automatic)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .confirmationDialog("Reset Atlas?", isPresented: $confirmsReset) {
             Button("Reset Everything", role: .destructive) {
                 model.resetEverything()

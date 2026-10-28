@@ -48,7 +48,7 @@ struct HeaderView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .controlSize(compact ? .small : .regular)
-            .frame(width: compact ? 300 : 372)
+            .frame(width: compact ? 248 : 310)
 
             Button {
                 model.toggleAngleMode()

@@ -92,10 +92,10 @@ Messages API, so it works with OpenAI, Anthropic, OpenRouter, Groq, Ollama and
 LM Studio. The API key is stored in the macOS Keychain and requests go straight
 from your Mac to the provider you choose.
 
-**Settings** (its own tab, ⌘5) — angle mode, sidebar and AI-panel visibility,
+**Settings** (its own window, ⌘,) — angle mode, sidebar and AI-panel visibility,
 history and variable cleanup, a full reset, and all of the AI configuration
 (provider, model, base URL, key, instructions, creativity and a connection
-test).
+test). The gear in the AI panel opens the same window.
 
 ## Quick syntax
 
@@ -122,8 +122,9 @@ The in-app **Reference** sheet (⌘/) lists every function with an example.
 | ⇧⌘C | Copy the current result |
 | ⇧⌘⌫ | Clear |
 | ⇧⌘D | Toggle degrees / radians |
-| ⌘1 / ⌘2 / ⌘3 / ⌘4 / ⌘5 | Basic / Scientific / Calculus / Algebra / Settings |
+| ⌘1 / ⌘2 / ⌘3 / ⌘4 | Basic / Scientific / Calculus / Algebra |
 | ⌘K | Toggle the AI tutor panel |
+| ⌘, | Settings |
 | ⇧⌘H | Toggle the history sidebar |
 | ⌘/ | Function reference |
 

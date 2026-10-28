@@ -46,7 +46,6 @@ final class CalculatorModel {
         case scientific
         case calculus
         case algebra
-        case settings
 
         var id: String { rawValue }
 
@@ -56,7 +55,6 @@ final class CalculatorModel {
             case .scientific: return "Scientific"
             case .calculus: return "Calculus"
             case .algebra: return "Algebra"
-            case .settings: return "Settings"
             }
         }
 
@@ -66,13 +64,19 @@ final class CalculatorModel {
             case .scientific: return "function"
             case .calculus: return "chart.xyaxis.line"
             case .algebra: return "x.squareroot"
-            case .settings: return "gearshape"
             }
         }
 
         /// Modes that edit the main expression field.
         var editsExpression: Bool {
             self == .basic || self == .scientific
+        }
+
+        /// Older builds stored a `settings` mode. Treat anything unrecognised as Basic
+        /// instead of failing to decode the whole persisted state.
+        init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Mode(rawValue: raw) ?? .basic
         }
     }
 
@@ -303,10 +307,6 @@ final class CalculatorModel {
     func toggleAIPanel() {
         showAIPanel.toggle()
         if showAIPanel { showSidebar = false }
-    }
-
-    func openSettings() {
-        mode = .settings
     }
 
     func clearVariables() {
