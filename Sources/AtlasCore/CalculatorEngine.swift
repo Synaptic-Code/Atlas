@@ -89,4 +89,13 @@ public struct CalculatorEngine: Sendable {
     private func makeContext() -> EvalContext {
         EvalContext(variables: variables, angleMode: angleMode)
     }
+
+    /// Stores a value in a variable.
+    ///
+    /// `variables` is `private(set)` so callers cannot corrupt the store, but the complex
+    /// evaluator in another file needs to apply assignments. Exposing a narrow,
+    /// documented mutator keeps the encapsulation without duplicating assignment logic.
+    mutating func storeVariable(_ name: String, _ value: Double) {
+        variables[name] = value
+    }
 }

@@ -182,10 +182,31 @@ public struct ExpressionParser {
                 expression = .call("factorial", [expression])
             } else if match("%") {
                 expression = .percent(expression)
+            } else if match("°") {
+                // A trailing degree sign turns the angle into radians, matching what the
+                // trigonometry functions expect. `sin(45°)` and `sin(radians(45))` agree.
+                expression = .binary("*", expression, .binary("/", .variable("pi"), .number(180)))
             } else {
                 return expression
             }
         }
+    }
+
+    /// Parses the operand of `√` and `∛`.
+    ///
+    /// A radicand may start with a sign — `√−1` used to fail with `unexpectedToken("-")`
+    /// because the prefix operators only accepted a *postfix* expression. Reading a full
+    /// unary expression here keeps `√−1` working and leaves `−√4` unchanged.
+    private mutating func parseRadicand() throws -> Expression {
+        if isSymbol("-") {
+            advance()
+            return .unary("-", try parseRadicand())
+        }
+        if isSymbol("+") {
+            advance()
+            return try parseRadicand()
+        }
+        return try parsePostfix()
     }
 
     private mutating func parsePrimary() throws -> Expression {
@@ -223,11 +244,11 @@ public struct ExpressionParser {
 
         case .symbol("√"):
             advance()
-            return .call("sqrt", [try parsePostfix()])
+            return .call("sqrt", [try parseRadicand()])
 
         case .symbol("∛"):
             advance()
-            return .call("cbrt", [try parsePostfix()])
+            return .call("cbrt", [try parseRadicand()])
 
         case .symbol(let symbol):
             throw MathError.unexpectedToken(symbol)

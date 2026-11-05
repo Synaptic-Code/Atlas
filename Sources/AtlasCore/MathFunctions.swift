@@ -23,6 +23,15 @@ enum MathConstants {
         "infinity": .infinity,
         "nan": .nan
     ]
+
+    /// Names that evaluate to the imaginary unit rather than to a real value.
+    ///
+    /// These are deliberately *not* in `values`: the engine's real path is a `Double`
+    /// evaluator, and 0 was the wrong value for `i` anyway. Keeping the names out of the
+    /// real table makes `i` fail the real path with `unknownIdentifier`, which is exactly
+    /// the signal ``ComplexEvaluator`` uses to take over. `i` is what mathematicians
+    /// write, `j` is what engineers write.
+    static let imaginaryNames: Set<String> = ["i", "j"]
 }
 
 /// The function library: everything callable as `name(arguments…)`.
@@ -39,11 +48,28 @@ enum MathFunctions {
         "gcd", "lcm", "mod", "hypot", "deg", "rad", "clamp", "pow",
         "min", "max", "sum", "prod", "product",
         "mean", "avg", "median", "stdev", "stddev", "variance", "var",
-        "rand", "random"
+        "rand", "random",
+        // Complex-number helpers (see ComplexNumber). These accept and return complex
+        // values, so they live in the evaluator's complex path rather than in `apply`.
+        "conj", "conjugate", "arg", "argument", "re", "real", "im", "imag", "imaginary",
+        "polar", "rectangular"
+    ]
+
+    /// Functions that only make sense on complex values.
+    static let complexNames: Set<String> = [
+        "conj", "conjugate", "arg", "argument", "re", "real", "im", "imag", "imaginary",
+        "polar", "rectangular"
     ]
 
     static func apply(_ rawName: String, _ args: [Double], angleMode: AngleMode) throws -> Double {
         let name = rawName.lowercased()
+
+        // The degree sign in `sin(45°)` is desugared to `45 × (π/180)`. Multiplying by an
+        // irrational constant loses the exactness that `sinValue` relies on, so recover the
+        // signed whole number of degrees whenever the input is clearly the result of that
+        // rewrite. The tolerance is a few ulps of π/180 — far tighter than any value a user
+        // could type by hand, so genuine radian arguments are never affected.
+        let args = correctedExactDegrees(name, args, angleMode: angleMode)
 
         switch name {
         // MARK: Trigonometry
@@ -299,7 +325,16 @@ enum MathFunctions {
             if args.isEmpty {
                 return Double.random(in: 0..<1)
             } else if args.count == 2 {
-                return Double.random(in: min(args[0], args[1])...max(args[0], args[1]))
+                // `Double.random(in:)` traps with
+                // "There is no uniform distribution on an infinite range" when bounds are
+                // not finite, and the old code happily forwarded `inf` or `nan`. Reject those
+                // with a diagnosable error instead of crashing the app.
+                let low = min(args[0], args[1])
+                let high = max(args[0], args[1])
+                guard low.isFinite, high.isFinite else {
+                    throw MathError.domainError("rand() needs finite bounds.")
+                }
+                return Double.random(in: low...high)
             }
             throw MathError.wrongArgumentCount(function: name, expected: "0 or 2", got: args.count)
 
@@ -436,6 +471,35 @@ enum MathFunctions {
         return quadrant >= 0 ? quadrant : quadrant + 4
     }
 
+    /// Recovers the exact whole number of degrees behind a `x × (π/180)` argument.
+    ///
+    /// Only trigonometric entry points are considered, and only in degree mode, because the
+    /// rewrite is only introduced for the degree sign.
+    private static func correctedExactDegrees(
+        _ name: String,
+        _ args: [Double],
+        angleMode: AngleMode
+    ) -> [Double] {
+        guard angleMode == .degrees,
+              args.count == 1,
+              Self.trigonometricNames.contains(name),
+              args[0].isFinite
+        else {
+            return args
+        }
+        let scale = Double.pi / 180
+        let candidate = args[0] / scale
+        let rounded = candidate.rounded()
+        guard abs(rounded) <= 1e9, abs(candidate - rounded) <= 4 * Double.ulpOfOne * max(1, abs(candidate)) else {
+            return args
+        }
+        return [rounded]
+    }
+
+    private static let trigonometricNames: Set<String> = [
+        "sin", "cos", "tan", "sec", "csc", "cot"
+    ]
+
     private static func radianQuadrant(_ radians: Double) -> Int? {
         let quotient = radians / (.pi / 2)
         let rounded = quotient.rounded()
@@ -467,7 +531,9 @@ enum MathFunctions {
             if let quadrant = degreeQuadrant(angle) {
                 return [1.0, 0.0, -1.0, 0.0][quadrant]
             }
-            return Darwin.cos(angle * .pi / 180)
+            // Even for non-quarter angles, reuse the sine path so every exact-angle fix in
+            // `sinValue` applies to cosine as well.
+            return sinValue(angle + 90, mode: .degrees)
         case .radians:
             if let quadrant = radianQuadrant(angle) {
                 return [1.0, 0.0, -1.0, 0.0][quadrant]

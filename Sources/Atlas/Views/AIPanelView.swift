@@ -1,3 +1,4 @@
+import AtlasCore
 import SwiftUI
 
 struct AIPanelView: View {
@@ -133,7 +134,7 @@ struct AIPanelView: View {
                     )
                     .contextMenu {
                         Button("Copy") { copy(message.text) }
-                        Button("Send to Calculator") { model.expression = message.text }
+                        Button("Send to Calculator") { model.expression = Self.extractableExpression(from: message.text) }
                     }
             }
 
@@ -152,13 +153,51 @@ struct AIPanelView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contextMenu {
                         Button("Copy") { copy(message.text) }
-                        Button("Insert into Calculator") { model.expression = message.text }
+                        Button("Insert into Calculator") { model.expression = Self.extractableExpression(from: message.text) }
                     }
 
                 Spacer(minLength: 0)
             }
             .padding(.vertical, 2)
         }
+    }
+
+    /// Pulls a single evaluatable expression out of a chat reply.
+    ///
+    /// Replies are prose: step lists, headings, LaTeX and complete sentences, often across
+    /// several lines. Dropping that whole block into the calculator produced an immediate
+    /// `unexpectedCharacter` error, which made both buttons look broken. Instead this scans
+    /// for the first line whose content parses on its own, strips the decorative LaTeX and
+    /// markdown around it, and falls back to the raw text when nothing parses.
+    static func extractableExpression(from text: String) -> String {
+        let engine = CalculatorEngine()
+        let candidates = text
+            .components(separatedBy: .newlines)
+            .map { line -> String in
+                var cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                // Drop markdown/list markers and surrounding emphasis.
+                while let first = cleaned.first, "-*#>".contains(first) {
+                    cleaned.removeFirst()
+                    cleaned = cleaned.trimmingCharacters(in: .whitespaces)
+                }
+                cleaned = cleaned.replacingOccurrences(of: "`", with: "")
+                cleaned = cleaned.replacingOccurrences(of: "$", with: "")
+                // `x = …` and `y = …` are answers; keep only what follows the last "=".
+                if let equals = cleaned.lastIndex(of: "="), equals != cleaned.startIndex {
+                    let rhs = cleaned[cleaned.index(after: equals)...]
+                        .trimmingCharacters(in: .whitespaces)
+                    if !rhs.isEmpty { cleaned = rhs }
+                }
+                return cleaned
+            }
+            .filter { !$0.isEmpty }
+
+        // Longest first: a full expression beats the fragment that happens to precede it.
+        for candidate in candidates.sorted(by: { $0.count > $1.count }) {
+            let latex = LaTeX.expression(from: candidate)
+            if (try? engine.preview(latex)) != nil { return latex }
+        }
+        return text
     }
 
     private var typingIndicator: some View {

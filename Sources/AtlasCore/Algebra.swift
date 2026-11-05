@@ -327,7 +327,10 @@ public enum AlgebraSolver {
             let coefficient = abs(a - 1) < 1e-12
                 ? ""
                 : (abs(a + 1) < 1e-12 ? "−" : NumberText.string(for: a))
-            factored = "\(coefficient)(\(variable) − \(approximate))"
+            // Render the root sign-aware: a negative root reads "(x + 0.63)",
+            // never "(x − −0.63)".
+            let relation = rootValue < 0 ? "+" : "−"
+            factored = "\(coefficient)(\(variable) \(relation) \(decimal(abs(rootValue))))"
         }
 
         return ([root], factored)
@@ -1327,7 +1330,8 @@ public enum AlgebraSolver {
     }
 
     private static func scalePrefix(_ scale: Fraction) -> String {
-        if scale == Fraction(1) { return "1" }
+        // A factor of exactly 1 is silent in factored form: "(2x + 1)", not "1(2x + 1)".
+        if scale == Fraction(1) { return "" }
         if scale == Fraction(-1) { return "−" }
         return scale.text
     }

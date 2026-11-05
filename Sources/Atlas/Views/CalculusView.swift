@@ -19,6 +19,36 @@ struct CalculusView: View {
         .onChange(of: calculus.operation) { _, _ in
             calculus.run(with: model.engine)
         }
+        // Editing a field used to leave the previous result and plot on screen, so the
+        // number shown could belong to a different integrand than the one in the box.
+        // A short debounce keeps typing cheap while guaranteeing the result follows the text.
+        .task(id: ComputationKey(calculus)) {
+            guard !Task.isCancelled else { return }
+            try? await Task.sleep(for: .milliseconds(220))
+            guard !Task.isCancelled else { return }
+            calculus.run(with: model.engine)
+        }
+    }
+
+    /// Everything that changes the answer. Conforming to `Equatable` lets `.task(id:)`
+    /// restart only when one of these actually changes.
+    ///
+    /// `@MainActor` because it reads `CalculusModel`, which is main-actor isolated.
+    @MainActor
+    private struct ComputationKey: Equatable {
+        let operation: CalculusModel.Operation
+        let function: String
+        let point: String
+        let order: Int
+        let direction: LimitDirection
+
+        init(_ calculus: CalculusModel) {
+            operation = calculus.operation
+            function = calculus.functionText
+            point = calculus.pointText
+            order = calculus.order
+            direction = calculus.direction
+        }
     }
 
     // MARK: - Operation picker

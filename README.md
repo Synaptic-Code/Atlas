@@ -137,6 +137,9 @@ Sources/AtlasCore/     Dependency-free math engine
   MathFunctions         function library
   Calculus              numerical differentiation/integration/limits/roots/series
   Algebra               polynomial solving, rational factoring, exact roots
+  Complex               complex values: parsing, polar form, arithmetic, elementary functions
+  ComplexEvaluator      complex evaluation path, used only when an expression needs it
+  Matrix                parsing, arithmetic, determinant, inverse, RREF, solve, eigenpairs
   LaTeX                 LaTeX input conversion and pretty printing
   NumberText            display formatting + fraction approximation
   CalculatorEngine      stateful front door (variables, ans)
@@ -171,5 +174,12 @@ Atlas.xcodeproj/       Xcode app + framework + test targets
   rather than `UserDefaults`. `NSAllowsLocalNetworking` is enabled so local
   OpenAI-compatible servers (Ollama, LM Studio) can be reached over `http://`
   without weakening App Transport Security for the internet.
-- **Future enhancements**: complex number support and matrix operations are on the
-  roadmap but not yet implemented.
+- Complex numbers are available everywhere an expression is evaluated: write `i` (or
+  `j`), `3 + 4i`, or polar `2∠45°`. `conj`, `arg`, `re`, `im` and `polar` work on them,
+  `abs` returns the modulus, and `sqrt`, `ln`, `exp`, `sin`, `cos` and `tan` accept
+  complex arguments. Real expressions still go through the `Double` path first, so
+  nothing about plain arithmetic changed. Assignments (`x = …`) are real-only.
+- Matrix support lives in `Matrix` and is covered by the test suite: `Matrix.parse`
+  accepts `[1, 2; 3, 4]`, and the type provides `+`, `-`, `*`, `scaled(by:)`,
+  `transposed()`, `determinant`, `inverse`, `reducedRowEchelonForm()`, `solve(_:)`
+  for `Ax = b`, and `eigenpairs` (Jacobi for symmetric matrices).

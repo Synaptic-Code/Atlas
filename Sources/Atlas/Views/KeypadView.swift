@@ -7,6 +7,17 @@ struct KeypadKey: Identifiable, Sendable {
         case delete
         case evaluate
         case negate
+
+        /// Stable discriminator used to build ``KeypadKey/id``.
+        var key: String {
+            switch self {
+            case .insert(let text): return "insert:\(text)"
+            case .clear: return "clear"
+            case .delete: return "delete"
+            case .evaluate: return "evaluate"
+            case .negate: return "negate"
+            }
+        }
     }
 
     enum Style: Sendable {
@@ -17,14 +28,23 @@ struct KeypadKey: Identifiable, Sendable {
         case equals
     }
 
-    let id: UUID
     let label: String
     var systemImage: String?
     let action: Action
     let style: Style
 
+    /// Identity derived from what the key *does*.
+    ///
+    /// The old implementation stored `let id = UUID()` allocated in `init`. SwiftUI
+    /// rebuilds these structs on every body evaluation, so every rebuild produced brand
+    /// new identities: `ForEach` diffed everything as insert+delete, hover and press
+    /// state were lost, and animations flickered. A content-derived id is stable across
+    /// rebuilds, which is exactly what `Identifiable` is for.
+    var id: String {
+        "\(label)|\(systemImage ?? "")|\(style)|\(action.key)"
+    }
+
     init(label: String, systemImage: String? = nil, action: Action, style: Style) {
-        self.id = UUID()
         self.label = label
         self.systemImage = systemImage
         self.action = action

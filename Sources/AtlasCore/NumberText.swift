@@ -79,9 +79,17 @@ public enum NumberText {
     }
 
     private static func scientific(_ value: Double, significantDigits: Int) -> String {
-        let exponent = Int(floor(log10(abs(value))))
-        let mantissa = value / pow(10, Double(exponent))
-        var mantissaText = String(format: "%.\(max(0, significantDigits - 1))f", mantissa)
+        var exponent = Int(floor(log10(abs(value))))
+        var mantissa = value / pow(10, Double(exponent))
+        let digits = max(0, significantDigits - 1)
+        var mantissaText = String(format: "%.\(digits)f", mantissa)
+        // A mantissa like 9.9999999999999 rounds up to 10 at display precision; carry
+        // into the exponent so the result reads 1×10^(e+1), never 10×10^e.
+        if let rounded = Double(mantissaText), abs(rounded) >= 10 {
+            exponent += 1
+            mantissa /= 10
+            mantissaText = String(format: "%.\(digits)f", mantissa)
+        }
         mantissaText = trimTrailingZeros(mantissaText)
         return "\(mantissaText)×10\(superscript(exponent))"
     }

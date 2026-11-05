@@ -26,6 +26,13 @@ public struct CalculusEngine: Sendable {
     public let variables: [String: Double]
     public let angleMode: AngleMode
 
+    /// How much deeper a genuine touching root dips than its two neighbouring samples.
+    ///
+    /// `x²` sampled on a grid of step `h` dips from `h²` at the neighbours to ~0 at the root, a
+    /// ratio far larger than this. Ordinary wiggles never approach it, which is what keeps
+    /// functions with poles (where |f| is huge but never a local dip) free of false positives.
+    private static let touchDepth = 1e-3
+
     public init(expression: Expression, variable: String, variables: [String: Double], angleMode: AngleMode) {
         self.expression = expression
         self.variable = variable.lowercased()
@@ -112,8 +119,8 @@ public struct CalculusEngine: Sendable {
     // MARK: - Integration
 
     public func integral(from a: Double, to b: Double, tolerance: Double = 1e-10) throws -> Double {
-        guard a.isFinite || a == -.infinity || a == .infinity else { throw MathError.domainError("Invalid bound.") }
-        guard b.isFinite || b == -.infinity || b == .infinity else { throw MathError.domainError("Invalid bound.") }
+        guard a.isFinite || a.isInfinite else { throw MathError.domainError("Invalid bound.") }
+        guard b.isFinite || b.isInfinite else { throw MathError.domainError("Invalid bound.") }
         guard a != b else { return 0 }
 
         if a == .infinity || b == -.infinity {
@@ -327,6 +334,12 @@ public struct CalculusEngine: Sendable {
         let count = max(16, samples)
         let step = (upper - lower) / Double(count)
 
+        var grid: [Double] = []
+        grid.reserveCapacity(count + 1)
+        for index in 0...count {
+            grid.append(sample(lower + Double(index) * step))
+        }
+
         var found: [Double] = []
         var previousX = lower
         var previousY = sample(lower)
@@ -344,11 +357,9 @@ public struct CalculusEngine: Sendable {
                     if let root = bisect(previousX, x), abs(sample(root)) < 1e-5 {
                         appendUnique(root, to: &found)
                     }
-                } else if abs(y) < 1e-6 {
-                    // A touching root (like x² at 0) has no sign change.
-                    if let root = refineTouch(previousX, x, y: y) {
-                        appendUnique(root, to: &found)
-                    }
+                } else if index < count,
+                          let root = touchingRoot(index, grid: grid, lower: lower, step: step) {
+                    appendUnique(root, to: &found)
                 }
             }
 
@@ -358,6 +369,60 @@ public struct CalculusEngine: Sendable {
 
         guard !found.isEmpty else { throw MathError.noRootsFound }
         return found.sorted()
+    }
+
+    /// Finds a touching (even-multiplicity) root near grid point `index`.
+    ///
+    /// A touching root like the one in `x²` never changes sign, so it can only be spotted as a
+    /// *local* dip of |f|. The test is therefore relative and local — a dip must be far deeper
+    /// than both of its neighbours — rather than comparing against a global scale.
+    ///
+    /// Comparing against the global maximum (an earlier attempt) fails badly on functions with
+    /// poles: `tan(x)` reaches ~1e16 near π/2, which made the band enormous and turned whole
+    /// stretches of ordinary samples into bogus roots. A local comparison is immune to that.
+    private func touchingRoot(
+        _ index: Int,
+        grid: [Double],
+        lower: Double,
+        step: Double
+    ) -> Double? {
+        let left = abs(grid[index - 1])
+        let middle = abs(grid[index])
+        let right = abs(grid[index + 1])
+        guard left.isFinite, middle.isFinite, right.isFinite else { return nil }
+
+        // Strict local minimum of |f|, and thousands of times deeper than both neighbours.
+        guard middle < left, middle < right,
+              middle <= left * Self.touchDepth, middle <= right * Self.touchDepth else {
+            return nil
+        }
+
+        var low = lower + Double(index - 1) * step
+        var high = lower + Double(index + 1) * step
+        var best = (low + high) / 2
+        var bestValue = abs(sample(best))
+
+        for _ in 0..<120 {
+            let leftThird = low + (high - low) / 3
+            let rightThird = high - (high - low) / 3
+            let leftValue = abs(sample(leftThird))
+            let rightValue = abs(sample(rightThird))
+            if leftValue < rightValue {
+                high = rightThird
+            } else {
+                low = leftThird
+            }
+            let candidate = (low + high) / 2
+            let candidateValue = abs(sample(candidate))
+            if candidateValue < bestValue {
+                best = candidate
+                bestValue = candidateValue
+            }
+            if high - low < 1e-15 * max(1, abs(best)) { break }
+        }
+
+        guard bestValue <= middle else { return nil }
+        return best
     }
 
     private func appendUnique(_ value: Double, to roots: inout [Double]) {
@@ -389,7 +454,7 @@ public struct CalculusEngine: Sendable {
         return (lower + upper) / 2
     }
 
-    private func refineTouch(_ a: Double, _ b: Double, y: Double) -> Double? {
+    private func refineTouch(_ a: Double, _ b: Double, band: Double) -> Double? {
         var lower = a
         var upper = b
         var best = (lower + upper) / 2
@@ -413,7 +478,7 @@ public struct CalculusEngine: Sendable {
             }
         }
 
-        guard bestValue < 1e-7 else { return nil }
+        guard bestValue < band else { return nil }
         return best
     }
 

@@ -29,6 +29,9 @@ public enum Lexer {
         "−": "-", "–": "-", "—": "-",
         "π": "pi", "τ": "tau", "φ": "phi", "ϕ": "phi",
         "∞": "infinity",
+        "²": "^2", "³": "^3", "⁴": "^4", "⁵": "^5",
+        "⁶": "^6", "⁷": "^7", "⁸": "^8", "⁹": "^9", "⁰": "^0", "¹": "^1",
+        "∠": ",", "⦟": ",",
         "，": ",", "（": "(", "）": ")"
     ]
 
@@ -105,7 +108,7 @@ public enum Lexer {
                 continue
             }
 
-            if "+-*/^(),!%=|√∛".contains(character) {
+            if "+-*/^(),!%=|√∛°".contains(character) {
                 tokens.append(Token(kind: .symbol(String(character)), text: String(character)))
                 index += 1
                 continue

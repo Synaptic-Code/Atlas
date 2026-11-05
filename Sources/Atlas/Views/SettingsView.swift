@@ -30,6 +30,7 @@ struct SettingsView: View {
             .scrollIndicators(.automatic)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onDisappear { probeTask?.cancel() }
         .confirmationDialog("Reset Atlas?", isPresented: $confirmsReset) {
             Button("Reset Everything", role: .destructive) {
                 model.resetEverything()
@@ -384,14 +385,26 @@ struct SettingsView: View {
 
     // MARK: - Helpers
 
+    /// Holds the in-flight connection test so a new one can cancel the old one and so the
+    /// view can cancel it on disappear.
+    ///
+    /// The previous version started a bare `Task` with no handle: closing the settings
+    /// window left the request running, and when it finished it wrote to `@State` that no
+    /// longer had a view attached. It also could not be cancelled, so a slow provider
+    /// kept the button disabled after the window was reopened.
+    @State private var probeTask: Task<Void, Never>?
+
     private func runProbe(_ settings: AISettings) {
         guard probe != .running else { return }
+        probeTask?.cancel()
         probe = .running
-        Task {
+        probeTask = Task { @MainActor in
             do {
                 let reply = try await settings.testConnection()
+                guard !Task.isCancelled else { return }
                 probe = .success(reply)
             } catch {
+                guard !Task.isCancelled else { return }
                 probe = .failure(error.localizedDescription)
             }
         }

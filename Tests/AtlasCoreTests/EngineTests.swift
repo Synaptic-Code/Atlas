@@ -268,6 +268,9 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(NumberText.string(for: 0.1 + 0.2), "0.3")
         XCTAssertEqual(NumberText.string(for: 1e13), "1×10¹³")
         XCTAssertEqual(NumberText.string(for: 1e-10), "1×10⁻¹⁰")
+        // A mantissa that rounds up to 10 must carry into the exponent.
+        XCTAssertEqual(NumberText.string(for: 9.9999999999999e12), "1×10¹³")
+        XCTAssertEqual(NumberText.string(for: -9.9999999999999e12), "-1×10¹³")
         XCTAssertEqual(NumberText.string(for: .nan), "undefined")
         XCTAssertEqual(NumberText.string(for: .infinity), "∞")
         XCTAssertEqual(NumberText.fraction(for: 0.75), "3/4")
@@ -342,6 +345,11 @@ final class EngineTests: XCTestCase {
         let cubic = try AlgebraSolver.solve("x^{3} - 6x^{2} + 11x - 6 = 0")
         XCTAssertEqual(cubic.roots.map(\.real).sorted(), [1, 2, 3])
         XCTAssertEqual(cubic.factoredForm, "(x − 1)(x − 2)(x − 3)")
+
+        // A scale of exactly 1 stays silent in the factored form — no "1(2x + 1)".
+        let unitScale = try AlgebraSolver.solve("2x + 1 = 0")
+        XCTAssertEqual(unitScale.roots.first?.real ?? .nan, -0.5, accuracy: 1e-12)
+        XCTAssertEqual(unitScale.factoredForm, "(2x + 1)")
     }
 
     func testFractionalCoefficientsAndEquationHeuristic() throws {
@@ -360,5 +368,176 @@ final class EngineTests: XCTestCase {
 
         let contradiction = try AlgebraSolver.solve("2 = 3")
         XCTAssertTrue(contradiction.isContradiction)
+    }
+
+    // MARK: - Complex numbers
+
+    func testComplexLiteralParsing() {
+        XCTAssertEqual(ComplexNumber.parse("3i"), ComplexNumber(real: 0, imaginary: 3))
+        XCTAssertEqual(ComplexNumber.parse("-3i"), ComplexNumber(real: 0, imaginary: -3))
+        XCTAssertEqual(ComplexNumber.parse("i"), .imaginaryUnit)
+        XCTAssertEqual(ComplexNumber.parse("-i"), ComplexNumber(real: 0, imaginary: -1))
+        XCTAssertEqual(ComplexNumber.parse("1+2i"), ComplexNumber(real: 1, imaginary: 2))
+        XCTAssertEqual(ComplexNumber.parse("1 - 2i"), ComplexNumber(real: 1, imaginary: -2))
+        XCTAssertEqual(ComplexNumber.parse("2i-3"), ComplexNumber(real: -3, imaginary: 2))
+        XCTAssertEqual(ComplexNumber.parse("2.5"), ComplexNumber(real: 2.5, imaginary: 0))
+        XCTAssertNil(ComplexNumber.parse("abc"))
+    }
+
+    func testComplexPolarParsing() throws {
+        // 3∠45° has magnitude 3 at 45°.
+        let degrees = try XCTUnwrap(ComplexNumber.parse("3\u{2220}45"))
+        XCTAssertEqual(degrees.real, 3 * sqrt(2) / 2, accuracy: 1e-12)
+        XCTAssertEqual(degrees.imaginary, 3 * sqrt(2) / 2, accuracy: 1e-12)
+        XCTAssertEqual(degrees.asPolar(angleMode: .degrees), "3\u{2220}45\u{00B0}")
+
+        let right = try XCTUnwrap(ComplexNumber.parse("2\u{2220}90"))
+        XCTAssertEqual(right.real, 0, accuracy: 1e-12)
+        XCTAssertEqual(right.imaginary, 2, accuracy: 1e-12)
+    }
+
+    func testComplexDisplayKeepsSign() throws {
+        XCTAssertEqual(ComplexNumber(real: 0, imaginary: -3).asRectangular, "-3i")
+        XCTAssertEqual(ComplexNumber(real: 0, imaginary: 1).asRectangular, "i")
+        XCTAssertEqual(ComplexNumber(real: 0, imaginary: -1).asRectangular, "-i")
+        XCTAssertEqual(ComplexNumber(real: 1, imaginary: 2).asRectangular, "1 + 2i")
+        XCTAssertEqual(ComplexNumber(real: 1, imaginary: -2).asRectangular, "1 − 2i")
+        XCTAssertEqual(ComplexNumber(real: 2.5, imaginary: 0).asRectangular, "2.5")
+        // Round-off must not leak into display.
+        XCTAssertEqual(try ComplexNumber.sqrt(of: ComplexNumber(real: -4, imaginary: 0)).asRectangular, "2i")
+    }
+
+    func testComplexArithmeticIdentities() throws {
+        let one = ComplexNumber(real: 1, imaginary: 2)
+        let two = ComplexNumber(real: 3, imaginary: 4)
+
+        XCTAssertEqual(one * two, ComplexNumber(real: -5, imaginary: 10))
+        let quotient = try one / two
+        XCTAssertEqual(quotient.real, 0.44, accuracy: 1e-12)
+        XCTAssertEqual(quotient.imaginary, 0.08, accuracy: 1e-12)
+
+        // i² = −1 and (1+i)² = 2i.
+        XCTAssertEqual(try ComplexNumber.power(.imaginaryUnit, ComplexNumber(real: 2, imaginary: 0)),
+                       ComplexNumber(real: -1, imaginary: 0))
+        XCTAssertEqual(try ComplexNumber.power(ComplexNumber(real: 1, imaginary: 1), ComplexNumber(real: 2, imaginary: 0)),
+                       ComplexNumber(real: 0, imaginary: 2))
+
+        // Euler: e^{iπ} = −1.
+        let euler = ComplexNumber.exp(of: ComplexNumber(real: 0, imaginary: .pi))
+        XCTAssertEqual(euler.real, -1, accuracy: 1e-12)
+        XCTAssertEqual(euler.imaginary, 0, accuracy: 1e-12)
+
+        XCTAssertThrowsError(try ComplexNumber(real: 0, imaginary: 0) / ComplexNumber(real: 0, imaginary: 0))
+        XCTAssertThrowsError(try ComplexNumber.power(ComplexNumber(real: 0, imaginary: 0), ComplexNumber(real: 0, imaginary: 0)))
+    }
+
+    func testComplexEngineEvaluation() throws {
+        var engine = CalculatorEngine()
+
+        XCTAssertEqual(try engine.evaluateComplex("2 + 3i").value.asRectangular, "2 + 3i")
+        XCTAssertEqual(try engine.evaluateComplex("i * i").value.asRectangular, "-1")
+        XCTAssertEqual(try engine.evaluateComplex("sqrt(-4)").value.asRectangular, "2i")
+        XCTAssertEqual(try engine.evaluateComplex("conj(3 + 4i)").value.asRectangular, "3 − 4i")
+        XCTAssertEqual(try engine.evaluateComplex("abs(3 + 4i)").value.asRectangular, "5")
+        XCTAssertEqual(try engine.evaluateComplex("im(5 + 2i)").value.asRectangular, "2")
+        XCTAssertEqual(try engine.evaluateComplex("re(5 + 2i)").value.asRectangular, "5")
+        XCTAssertEqual(try engine.evaluateComplex("arg(i)").value.asRectangular, "90")
+        XCTAssertEqual(try engine.evaluateComplex("ln(-1)").value.asRectangular, "3.14159265359i")
+
+        // Real expressions must behave exactly as before.
+        XCTAssertEqual(try engine.evaluateComplex("2 + 3 * 4").value.asRectangular, "14")
+        XCTAssertEqual(try engine.evaluateComplex("200 + 10%").value.asRectangular, "220")
+
+        // Real-only functions reject a complex argument rather than dropping the imaginary part.
+        XCTAssertThrowsError(try engine.evaluateComplex("gcd(3 + 4i, 2)"))
+    }
+
+    // MARK: - Matrices
+
+    func testMatrixParsingAndErrors() throws {
+        XCTAssertEqual(try Matrix.parse("[1, 2; 3, 4]").description, "[1, 2; 3, 4]")
+        XCTAssertEqual(try Matrix.parse("[1, 2; 3, 4]").rows, 2)
+        XCTAssertEqual(try Matrix.parse("[1, 2; 3, 4]").columns, 2)
+        XCTAssertThrowsError(try Matrix.parse("[1, 2; 3]"))
+        XCTAssertThrowsError(try Matrix.parse("[1, x]"))
+    }
+
+    func testMatrixArithmetic() throws {
+        let a = try Matrix.parse("[1, 2; 3, 4]")
+        let b = try Matrix.parse("[5, 6; 7, 8]")
+
+        XCTAssertEqual(try (a + b).description, "[6, 8; 10, 12]")
+        XCTAssertEqual(try (b - a).description, "[4, 4; 4, 4]")
+        XCTAssertEqual(try a.scaled(by: 2).description, "[2, 4; 6, 8]")
+        XCTAssertEqual(try (a * b).description, "[19, 22; 43, 50]")
+        XCTAssertEqual(try Matrix.parse("[1, 2, 3; 4, 5, 6]").transposed().description, "[1, 4; 2, 5; 3, 6]")
+        XCTAssertEqual(try a.trace, 5)
+
+        // Dimension mismatch must be reported, not guessed at.
+        XCTAssertThrowsError(try a * Matrix.parse("[1, 2, 3]"))
+        XCTAssertThrowsError(try a + Matrix.parse("[1, 2, 3]"))
+    }
+
+    func testMatrixDeterminantAndInverse() throws {
+        XCTAssertEqual(try Matrix.parse("[1, 2; 3, 4]").determinant, -2, accuracy: 1e-12)
+        XCTAssertEqual(try Matrix.parse("[6, 1, 1; 4, -2, 5; 2, 8, 7]").determinant, -306, accuracy: 1e-9)
+        XCTAssertEqual(try Matrix.parse("[1, 2; 2, 4]").determinant, 0, accuracy: 1e-12)
+
+        let inverse = try Matrix.parse("[4, 7; 2, 6]").inverse
+        XCTAssertEqual(inverse.description, "[0.6, -0.7; -0.2, 0.4]")
+
+        // A·A⁻¹ = I.
+        let original = try Matrix.parse("[4, 7; 2, 6]")
+        XCTAssertEqual(try (original * inverse).description, "[1, 0; 0, 1]")
+
+        XCTAssertThrowsError(try Matrix.parse("[1, 2; 2, 4]").inverse)
+    }
+
+    func testMatrixSolveAndRREF() throws {
+        let solution = try Matrix.parse("[2, 1; 1, 3]").solve([5, 10])
+        XCTAssertEqual(solution[0], 1, accuracy: 1e-12)
+        XCTAssertEqual(solution[1], 3, accuracy: 1e-12)
+
+        // 3x3: x + y + z = 6, 2y + 5z = -4, 2x + 5y - z = 27 → (5, 3, -2)
+        let system = try Matrix.parse("[1, 1, 1; 0, 2, 5; 2, 5, -1]")
+        let answer = try system.solve([6, -4, 27])
+        XCTAssertEqual(answer[0], 5, accuracy: 1e-9)
+        XCTAssertEqual(answer[1], 3, accuracy: 1e-9)
+        XCTAssertEqual(answer[2], -2, accuracy: 1e-9)
+
+        XCTAssertThrowsError(try Matrix.parse("[1, 2; 2, 4]").solve([1, 2]))
+
+        let reduced = try Matrix.parse("[1, 2, 3; 4, 5, 6]").reducedRowEchelonForm()
+        XCTAssertEqual(reduced.matrix.description, "[1, 0, -1; 0, 1, 2]")
+        XCTAssertEqual(reduced.pivotColumns, [0, 1])
+    }
+
+    func testMatrixEigenvalues() throws {
+        // Symmetric: [2, 1; 1, 2] has eigenvalues 1 and 3.
+        let symmetric = try Matrix.parse("[2, 1; 1, 2]")
+        XCTAssertTrue(symmetric.isSymmetric)
+        let pairs = try symmetric.eigenpairs
+        XCTAssertEqual(pairs.count, 2)
+        XCTAssertEqual(pairs[0].eigenvalue, 1, accuracy: 1e-9)
+        XCTAssertEqual(pairs[1].eigenvalue, 3, accuracy: 1e-9)
+        // Eigenvectors are unit length.
+        for pair in pairs {
+            let norm = sqrt(pair.eigenvector.map { $0 * $0 }.reduce(0, +))
+            XCTAssertEqual(norm, 1, accuracy: 1e-9)
+        }
+
+        // Diagonal matrix: eigenvalues are the diagonal, in order.
+        let diagonal = try Matrix.parse("[2, 0; 0, 3]").eigenpairs
+        XCTAssertEqual(diagonal.map(\.eigenvalue), [2, 3])
+
+        // Non-symmetric: the companion matrix of (x−1)(x−2)(x−3) has eigenvalues 1, 2, 3.
+        // Exercises the QR path (a similarity transform R·Q, not R·Qᵀ).
+        let companion = try Matrix.parse("[0, 0, 6; 1, 0, -11; 0, 1, 6]")
+        XCTAssertFalse(companion.isSymmetric)
+        let qrValues = try companion.eigenpairs.map(\.eigenvalue).sorted()
+        XCTAssertEqual(qrValues.count, 3)
+        for (actual, expected) in zip(qrValues, [1.0, 2.0, 3.0]) {
+            XCTAssertEqual(actual, expected, accuracy: 1e-7)
+        }
     }
 }

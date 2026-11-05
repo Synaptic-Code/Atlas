@@ -4,7 +4,7 @@ This document outlines the planned future enhancements for Atlas, organized by f
 
 ---
 
-## Complex Numbers
+## Complex Numbers — shipped
 
 ### Overview
 Add full complex number support to the calculator engine, enabling users to work with imaginary numbers in all numeric contexts (arithmetic, functions, calculus).
@@ -34,12 +34,13 @@ Extend the function library to accept complex arguments:
 - Handle edge cases: zero, pure imaginary, infinity
 
 ### Implementation Notes
-- The core math engine is dependency-free; complex arithmetic can be built using Swift's `Complex` type (stdlib since 5.9) or a minimal custom struct if stricter control is desired.
+- ~~The core math engine is dependency-free; complex arithmetic can be built using Swift's `Complex` type (stdlib since 5.9) or a minimal custom struct if stricter control is desired.~~
+  **Correction:** the Swift standard library has never shipped a `Complex` type. `ComplexModule` lives in the separate `swift-numerics` package, which would break the dependency-free rule, so `ComplexNumber` in `Sources/AtlasCore/Complex.swift` is a minimal hand-written struct. Implemented, along with the `ComplexEvaluator` path in `Sources/AtlasCore/ComplexEvaluator.swift`.
 - Ensure angle mode (degrees/radians) applies to polar input and trigonometric functions.
 
 ---
 
-## Matrix Operations
+## Matrix Operations — engine shipped
 
 ### Overview
 Provide matrix algebra capabilities, including basic operations, linear system solving, and determinant/eigenvalue computation for square matrices.
@@ -60,9 +61,10 @@ Provide matrix algebra capabilities, including basic operations, linear system s
 - For square matrices, find eigenvalues and eigenvectors (numerical methods acceptable; exact symbolic roots are not required here).
 
 ### Implementation Notes
-- Matrices will be represented as nested arrays or a dedicated `Matrix` type.
-- Keep the implementation within `Sources/AtlasCore`; no external dependencies needed.
-- Consider adding matrix input via text (e.g., comma-separated rows) and display formatting with clear delimiters.
+- ~~Matrices will be represented as nested arrays or a dedicated `Matrix` type.~~ Shipped as the `Matrix` value type in `Sources/AtlasCore/Matrix.swift` (row-major storage).
+- Keep the implementation within `Sources/AtlasCore`; no external dependencies needed. (Done — no dependencies added.)
+- ~~Consider adding matrix input via text (e.g., comma-separated rows) and display formatting with clear delimiters.~~ Shipped: `Matrix.parse("[1, 2; 3, 4]")` accepts semicolons or newlines between rows, commas or whitespace between entries; `description` renders `[1, 2; 3, 4]`.
+- Out of scope for this pass: wiring matrices into the calculator's text input (the parser has no matrix literals) and a dedicated matrix workspace view. The engine, its errors and its tests are in place.
 
 ---
 

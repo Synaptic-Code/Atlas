@@ -35,7 +35,10 @@
 		1A2B3C4D5E6F78900000201C /* AIChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000101C /* AIChatModel.swift */; };
 		1A2B3C4D5E6F78900000201D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000101D /* SettingsView.swift */; };
 		1A2B3C4D5E6F78900000201E /* AIPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000101E /* AIPanelView.swift */; };
+		1A2B3C4D5E6F78900000201F /* Complex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F78900000101F /* Complex.swift */; };
 		1A2B3C4D5E6F789000002020 /* EngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001020 /* EngineTests.swift */; };
+		1A2B3C4D5E6F789000002021 /* ComplexEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001021 /* ComplexEvaluator.swift */; };
+		1A2B3C4D5E6F789000002022 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001022 /* Matrix.swift */; };
 		1A2B3C4D5E6F789000002034 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001034 /* Assets.xcassets */; };
 		1A2B3C4D5E6F789000002041 /* AtlasCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001041 /* AtlasCore.framework */; };
 		1A2B3C4D5E6F789000002042 /* AtlasCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F789000001041 /* AtlasCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -102,7 +105,10 @@
 		1A2B3C4D5E6F78900000101C /* AIChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatModel.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F78900000101D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F78900000101E /* AIPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIPanelView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F78900000101F /* Complex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Complex.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001020 /* EngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F789000001021 /* ComplexEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplexEvaluator.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F789000001022 /* Matrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001030 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001031 /* Atlas-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Atlas-Info.plist"; sourceTree = "<group>"; };
 		1A2B3C4D5E6F789000001032 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -237,6 +243,9 @@
 				1A2B3C4D5E6F789000001018 /* Parser.swift */,
 				1A2B3C4D5E6F789000001019 /* Algebra.swift */,
 				1A2B3C4D5E6F78900000101A /* LaTeX.swift */,
+				1A2B3C4D5E6F78900000101F /* Complex.swift */,
+				1A2B3C4D5E6F789000001021 /* ComplexEvaluator.swift */,
+				1A2B3C4D5E6F789000001022 /* Matrix.swift */,
 			);
 			path = AtlasCore;
 			sourceTree = "<group>";
@@ -447,6 +456,9 @@
 				1A2B3C4D5E6F789000002018 /* Parser.swift in Sources */,
 				1A2B3C4D5E6F789000002019 /* Algebra.swift in Sources */,
 				1A2B3C4D5E6F78900000201A /* LaTeX.swift in Sources */,
+				1A2B3C4D5E6F78900000201F /* Complex.swift in Sources */,
+				1A2B3C4D5E6F789000002021 /* ComplexEvaluator.swift in Sources */,
+				1A2B3C4D5E6F789000002022 /* Matrix.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -601,7 +613,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
@@ -628,7 +640,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;

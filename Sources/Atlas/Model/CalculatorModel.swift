@@ -251,6 +251,19 @@ final class CalculatorModel {
         justEvaluated = false
     }
 
+    /// True when the leading "−(" of a negated expression closes at the very last
+    /// character — i.e. the whole expression is wrapped and can be safely unwrapped.
+    /// Without the check, "−(1)+(2)" would unwrap to the unbalanced "1)+(2".
+    private static func wrapsWholeExpression(_ text: String) -> Bool {
+        var depth = 0
+        for (offset, character) in text.enumerated() {
+            if character == "(" { depth += 1 }
+            if character == ")" { depth -= 1 }
+            if depth == 0 { return offset == text.count - 1 }
+        }
+        return false
+    }
+
     /// Negates the current expression, or writes a minus sign when the caret sits after
     /// an operator (where wrapping the whole expression would be wrong).
     func negate() {
@@ -261,7 +274,7 @@ final class CalculatorModel {
             expression = "−"
         } else if let last = trimmed.last, "+−×÷*/^%(".contains(last) {
             expression = trimmed + "−"
-        } else if trimmed.hasPrefix("−(") && trimmed.hasSuffix(")") {
+        } else if trimmed.hasPrefix("−(") && trimmed.hasSuffix(")") && Self.wrapsWholeExpression(trimmed) {
             expression = String(trimmed.dropFirst(2).dropLast())
         } else {
             expression = "−(" + trimmed + ")"
@@ -390,8 +403,13 @@ final class CalculatorModel {
         return expression.index(expression.startIndex, offsetBy: clamped)
     }
 
+    /// Keys that, when pressed straight after a result, should continue from that result.
+    ///
+    /// This used to list `²` and `³`, but the keypad has no such keys and `insert` already
+    /// rewrites them to `^2` / `^3`, so the entries were dead weight that made the list
+    /// look like superscripts were first-class continuation operators.
     private static let continuationPrefixes = [
-        "+", "−", "-", "×", "*", "÷", "/", "^", "%", "!", ")", "]", "²", "³"
+        "+", "−", "-", "×", "*", "÷", "/", "^", "%", "!", ")", "]"
     ]
 
     // MARK: - Persistence
@@ -423,9 +441,12 @@ final class CalculatorModel {
 
     private func save() {
         guard !isLoading else { return }
+        // `ans` is a real variable (README: "ans always holds the previous result") but was
+        // filtered out here, so it silently reset to 0 on every relaunch. Persist it with
+        // the user variables — `CalculatorEngine` treats it like any other entry internally.
         let state = PersistedState(
             history: Array(history.prefix(Self.maximumHistory)),
-            variables: engine.variables.filter { $0.key != "ans" },
+            variables: engine.variables,
             angleMode: engine.angleMode,
             mode: mode,
             showSidebar: showSidebar,

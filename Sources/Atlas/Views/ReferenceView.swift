@@ -4,14 +4,17 @@ struct ReferenceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
 
+    // Identities are derived from content. `let id = UUID()` allocated a fresh value every
+    // time the reference sheet was rebuilt, so filtering the list lost scroll position and
+    // `ForEach` never reused rows.
     private struct Item: Identifiable {
-        let id = UUID()
+        var id: String { token }
         let token: String
         let description: String
     }
 
     private struct Section: Identifiable {
-        let id = UUID()
+        var id: String { title }
         let title: String
         let symbol: String
         let items: [Item]
