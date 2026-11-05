@@ -613,7 +613,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
@@ -626,6 +626,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 4.0;
+				OTHER_SWIFT_FLAGS = "-Xfrontend -disable-sandbox";
 				PRODUCT_BUNDLE_IDENTIFIER = com.atlas.calculator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -640,7 +641,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
@@ -653,6 +654,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 4.0;
+				OTHER_SWIFT_FLAGS = "-Xfrontend -disable-sandbox";
 				PRODUCT_BUNDLE_IDENTIFIER = com.atlas.calculator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

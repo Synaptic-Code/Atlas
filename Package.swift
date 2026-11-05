@@ -18,7 +18,10 @@ let package = Package(
         .executableTarget(
             name: "Atlas",
             dependencies: ["AtlasCore"],
-            path: "Sources/Atlas"
+            path: "Sources/Atlas",
+            // The Swift 6.4 plugin sandbox cannot exec swift-plugin-server, which
+            // crashes macro expansion (@State, @Observable) with "malformed response".
+            swiftSettings: [.unsafeFlags(["-Xfrontend", "-disable-sandbox"])]
         ),
         .testTarget(
             name: "AtlasCoreTests",
